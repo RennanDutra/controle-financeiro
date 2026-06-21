@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import * as XLSX from "xlsx";
 import { jsPDF } from "jspdf";
+import { supabase } from "../lib/supabase";
 
 type Compra = {
   id: number;
@@ -53,6 +54,23 @@ type HistoricoMensal = {
   criadoEm: string;
 };
 
+type AppData = {
+  compras: Compra[];
+  cartoes: Cartao[];
+  faturasCartoes: FaturaCartao[];
+  pessoas: string[];
+  pessoasSelecionadasCartoes: string[];
+  pessoasSelecionadasParcelas: string[];
+  receitasClt: Lancamento[];
+  receitasMei: Lancamento[];
+  despesasMensais: Lancamento[];
+  assinaturas: Assinatura[];
+  historicoMensal: HistoricoMensal[];
+  ultimaAtualizacaoMensal: string;
+};
+
+const APP_DATA_ID = "controle-financeiro";
+
 const cartoesIniciais: Cartao[] = [
   { nome: "Platinum", limite: 5000 },
   { nome: "Uniclass", limite: 5000 },
@@ -97,6 +115,206 @@ const despesasMensaisIniciais: Lancamento[] = [
   { id: 4, descricao: "Claro", valor: 227.02 },
   { id: 5, descricao: "Mãe", valor: 454.98 },
 ];
+
+function comprasComTipo(lista: Compra[] = []) {
+  return lista.map((item) => ({
+    ...item,
+    tipo: item.tipo || (item.parcelas > 1 ? "parcela" : "avulso"),
+  }));
+}
+
+function assinaturasComPessoa(lista: Assinatura[] = []) {
+  return lista.map((item) => ({
+    ...item,
+    pessoa: item.pessoa || "Rennan",
+  }));
+}
+
+function dadosPadrao(): AppData {
+  return {
+    compras: [],
+    cartoes: cartoesIniciais,
+    faturasCartoes: faturasCartoesIniciais,
+    pessoas: pessoasIniciais,
+    pessoasSelecionadasCartoes: ["Rennan"],
+    pessoasSelecionadasParcelas: ["Rennan"],
+    receitasClt: receitasCltIniciais,
+    receitasMei: receitasMeiIniciais,
+    despesasMensais: despesasMensaisIniciais,
+    assinaturas: [],
+    historicoMensal: [],
+    ultimaAtualizacaoMensal: chaveMesAtual(),
+  };
+}
+
+function normalizarDadosOnline(data: Partial<AppData> | null | undefined): AppData {
+  const padrao = dadosPadrao();
+
+  if (!data || Object.keys(data).length === 0) {
+    return padrao;
+  }
+
+  return {
+    compras: comprasComTipo(data.compras || []),
+    cartoes: data.cartoes?.length ? data.cartoes : padrao.cartoes,
+    faturasCartoes: data.faturasCartoes?.length
+      ? data.faturasCartoes
+      : padrao.faturasCartoes,
+    pessoas: data.pessoas?.length ? data.pessoas : padrao.pessoas,
+    pessoasSelecionadasCartoes:
+      data.pessoasSelecionadasCartoes?.length
+        ? data.pessoasSelecionadasCartoes
+        : padrao.pessoasSelecionadasCartoes,
+    pessoasSelecionadasParcelas:
+      data.pessoasSelecionadasParcelas?.length
+        ? data.pessoasSelecionadasParcelas
+        : padrao.pessoasSelecionadasParcelas,
+    receitasClt: data.receitasClt?.length ? data.receitasClt : padrao.receitasClt,
+    receitasMei: data.receitasMei?.length ? data.receitasMei : padrao.receitasMei,
+    despesasMensais: data.despesasMensais?.length
+      ? data.despesasMensais
+      : padrao.despesasMensais,
+    assinaturas: assinaturasComPessoa(data.assinaturas || []),
+    historicoMensal: data.historicoMensal || [],
+    ultimaAtualizacaoMensal: data.ultimaAtualizacaoMensal || chaveMesAtual(),
+  };
+}
+
+function montarDadosDoLocalStorage(): AppData {
+  const padrao = dadosPadrao();
+
+  try {
+    const receitasAntigas = localStorage.getItem("receitas");
+    const receitasAntigasLista: Lancamento[] = receitasAntigas
+      ? JSON.parse(receitasAntigas)
+      : [];
+
+    const receitasCltMigradas = receitasAntigasLista.filter((item) =>
+      ["salário", "salario", "extra"].includes(item.descricao.toLowerCase()),
+    );
+
+    const receitasMeiMigradas = receitasAntigasLista.filter(
+      (item) =>
+        !["salário", "salario", "extra"].includes(item.descricao.toLowerCase()),
+    );
+
+    return normalizarDadosOnline({
+      compras: JSON.parse(localStorage.getItem("compras") || "[]"),
+      cartoes: JSON.parse(localStorage.getItem("cartoes") || "null") || padrao.cartoes,
+      faturasCartoes:
+        JSON.parse(localStorage.getItem("faturasCartoes") || "null") ||
+        padrao.faturasCartoes,
+      pessoas: JSON.parse(localStorage.getItem("pessoas") || "null") || padrao.pessoas,
+      pessoasSelecionadasCartoes:
+        JSON.parse(localStorage.getItem("pessoasSelecionadasCartoes") || "null") ||
+        padrao.pessoasSelecionadasCartoes,
+      pessoasSelecionadasParcelas:
+        JSON.parse(localStorage.getItem("pessoasSelecionadasParcelas") || "null") ||
+        padrao.pessoasSelecionadasParcelas,
+      receitasClt:
+        JSON.parse(localStorage.getItem("receitasClt") || "null") ||
+        receitasCltMigradas ||
+        padrao.receitasClt,
+      receitasMei:
+        JSON.parse(localStorage.getItem("receitasMei") || "null") ||
+        receitasMeiMigradas ||
+        padrao.receitasMei,
+      despesasMensais:
+        JSON.parse(localStorage.getItem("despesasMensais") || "null") ||
+        padrao.despesasMensais,
+      assinaturas: JSON.parse(localStorage.getItem("assinaturas") || "[]"),
+      historicoMensal: JSON.parse(localStorage.getItem("historicoMensal") || "[]"),
+      ultimaAtualizacaoMensal:
+        localStorage.getItem("ultimaAtualizacaoMensal") || chaveMesAtual(),
+    });
+  } catch {
+    return padrao;
+  }
+}
+
+function calcularHistoricoPorDados(mes: string, dados: AppData): HistoricoMensal {
+  const receitas =
+    dados.receitasClt.reduce((soma, item) => soma + item.valor, 0) +
+    dados.receitasMei.reduce((soma, item) => soma + item.valor, 0);
+
+  const despesasMensais = dados.despesasMensais.reduce(
+    (soma, item) => soma + item.valor,
+    0,
+  );
+
+  const cartoes = dados.compras
+    .filter((item) => item.pessoa === "Rennan")
+    .reduce((soma, item) => soma + item.valor, 0);
+
+  const assinaturas = dados.assinaturas
+    .filter((item) => (item.pessoa || "Rennan") === "Rennan")
+    .reduce((soma, item) => soma + item.valor, 0);
+
+  const despesasTotais = despesasMensais + cartoes + assinaturas;
+
+  const parcelasFuturas = dados.compras
+    .filter((item) => item.pessoa === "Rennan")
+    .reduce((soma, item) => {
+      if (tipoDaCompra(item) !== "parcela") return soma;
+
+      const atual = item.parcelaAtual || 1;
+      const restantesIncluindoAtual = Math.max(item.parcelas - atual + 1, 0);
+
+      return soma + item.valor * restantesIncluindoAtual;
+    }, 0);
+
+  return {
+    mes,
+    receitas,
+    despesasMensais,
+    cartoes,
+    assinaturas,
+    despesasTotais,
+    parcelasFuturas,
+    sobra: receitas - despesasTotais,
+    criadoEm: new Date().toLocaleString("pt-BR"),
+  };
+}
+
+function aplicarViradaDoMesNosDados(dadosOriginais: AppData): AppData {
+  const dados = normalizarDadosOnline(dadosOriginais);
+  const mesAtual = chaveMesAtual();
+  const ultimaAtualizacao = dados.ultimaAtualizacaoMensal || mesAtual;
+  const mesesPassados = diferencaMeses(ultimaAtualizacao, mesAtual);
+
+  if (mesesPassados <= 0) {
+    return dados;
+  }
+
+  const historicoDoMesAnterior = calcularHistoricoPorDados(
+    ultimaAtualizacao,
+    dados,
+  );
+
+  const comprasAtualizadas = dados.compras
+    .map((item) => {
+      if (tipoDaCompra(item) !== "parcela") return item;
+
+      return {
+        ...item,
+        parcelaAtual: (item.parcelaAtual || 1) + mesesPassados,
+      };
+    })
+    .filter((item) => {
+      if (tipoDaCompra(item) !== "parcela") return true;
+      return (item.parcelaAtual || 1) <= item.parcelas;
+    });
+
+  return {
+    ...dados,
+    compras: comprasAtualizadas,
+    historicoMensal: [
+      historicoDoMesAnterior,
+      ...dados.historicoMensal.filter((item) => item.mes !== ultimaAtualizacao),
+    ],
+    ultimaAtualizacaoMensal: mesAtual,
+  };
+}
 
 function formatar(valor: number) {
   return valor.toLocaleString("pt-BR", {
@@ -340,6 +558,10 @@ export default function Home() {
     despesasMensaisIniciais,
   );
   const [historicoMensal, setHistoricoMensal] = useState<HistoricoMensal[]>([]);
+  const [ultimaAtualizacaoMensal, setUltimaAtualizacaoMensal] =
+    useState(chaveMesAtual());
+  const [dadosCarregados, setDadosCarregados] = useState(false);
+  const [carregandoDados, setCarregandoDados] = useState(true);
 
   const [modalAberto, setModalAberto] = useState(false);
   const [compraEditandoId, setCompraEditandoId] = useState<number | null>(null);
@@ -367,105 +589,87 @@ export default function Home() {
       navigator.serviceWorker.register("/sw.js").catch(() => {});
     }
 
-    const comprasSalvas = localStorage.getItem("compras");
-    const cartoesSalvos = localStorage.getItem("cartoes");
-    const faturasCartoesSalvas = localStorage.getItem("faturasCartoes");
-    const pessoasSalvas = localStorage.getItem("pessoas");
-    const pessoasSelecionadasSalvas = localStorage.getItem(
-      "pessoasSelecionadasCartoes",
-    );
-    const pessoasSelecionadasParcelasSalvas = localStorage.getItem(
-      "pessoasSelecionadasParcelas",
-    );
-    const receitasCltSalvas = localStorage.getItem("receitasClt");
-    const receitasMeiSalvas = localStorage.getItem("receitasMei");
-    const despesasMensaisSalvas = localStorage.getItem("despesasMensais");
-    const assinaturasSalvas = localStorage.getItem("assinaturas");
-    const historicoMensalSalvo = localStorage.getItem("historicoMensal");
+    async function carregarDadosOnline() {
+      setCarregandoDados(true);
 
-    if (comprasSalvas) {
-      const comprasCarregadas: Compra[] = JSON.parse(comprasSalvas);
-      const comprasComTipo = comprasCarregadas.map((item) => ({
-        ...item,
-        tipo: item.tipo || (item.parcelas > 1 ? "parcela" : "avulso"),
-      }));
+      const { data: registro, error } = await supabase
+        .from("app_data")
+        .select("data")
+        .eq("id", APP_DATA_ID)
+        .maybeSingle();
 
-      setCompras(atualizarParcelasNaViradaDoMes(comprasComTipo));
-    } else {
-      localStorage.setItem("ultimaAtualizacaoMensal", chaveMesAtual());
-    }
-    if (cartoesSalvos) setCartoes(JSON.parse(cartoesSalvos));
-    if (faturasCartoesSalvas) setFaturasCartoes(JSON.parse(faturasCartoesSalvas));
-    if (pessoasSalvas) setPessoas(JSON.parse(pessoasSalvas));
-    if (pessoasSelecionadasSalvas)
-      setPessoasSelecionadasCartoes(JSON.parse(pessoasSelecionadasSalvas));
-    if (pessoasSelecionadasParcelasSalvas)
-      setPessoasSelecionadasParcelas(
-        JSON.parse(pessoasSelecionadasParcelasSalvas),
-      );
-
-    if (receitasCltSalvas) {
-      setReceitasClt(JSON.parse(receitasCltSalvas));
-    } else {
-      const receitasAntigas = localStorage.getItem("receitas");
-      if (receitasAntigas) {
-        const listaAntiga: Lancamento[] = JSON.parse(receitasAntigas);
-        setReceitasClt(
-          listaAntiga.filter((item) =>
-            ["salário", "salario", "extra"].includes(
-              item.descricao.toLowerCase(),
-            ),
-          ),
-        );
-        setReceitasMei(
-          listaAntiga.filter(
-            (item) =>
-              !["salário", "salario", "extra"].includes(
-                item.descricao.toLowerCase(),
-              ),
-          ),
-        );
+      if (error) {
+        console.error("Erro ao carregar dados do Supabase:", error);
+        alert("Erro ao carregar dados online. Verifique o Supabase.");
       }
+
+      const dadosOnline = registro?.data as Partial<AppData> | null;
+      const dadosBase =
+        dadosOnline && Object.keys(dadosOnline).length > 0
+          ? normalizarDadosOnline(dadosOnline)
+          : montarDadosDoLocalStorage();
+
+      const dadosAtualizados = aplicarViradaDoMesNosDados(dadosBase);
+
+      setCompras(dadosAtualizados.compras);
+      setCartoes(dadosAtualizados.cartoes);
+      setFaturasCartoes(dadosAtualizados.faturasCartoes);
+      setPessoas(dadosAtualizados.pessoas);
+      setPessoasSelecionadasCartoes(dadosAtualizados.pessoasSelecionadasCartoes);
+      setPessoasSelecionadasParcelas(dadosAtualizados.pessoasSelecionadasParcelas);
+      setReceitasClt(dadosAtualizados.receitasClt);
+      setReceitasMei(dadosAtualizados.receitasMei);
+      setDespesasMensais(dadosAtualizados.despesasMensais);
+      setAssinaturas(dadosAtualizados.assinaturas);
+      setHistoricoMensal(dadosAtualizados.historicoMensal);
+      setUltimaAtualizacaoMensal(dadosAtualizados.ultimaAtualizacaoMensal);
+
+      await supabase.from("app_data").upsert({
+        id: APP_DATA_ID,
+        data: dadosAtualizados,
+        updated_at: new Date().toISOString(),
+      });
+
+      setDadosCarregados(true);
+      setCarregandoDados(false);
     }
 
-    if (receitasMeiSalvas) setReceitasMei(JSON.parse(receitasMeiSalvas));
-    if (despesasMensaisSalvas)
-      setDespesasMensais(JSON.parse(despesasMensaisSalvas));
-    if (assinaturasSalvas) {
-      const assinaturasCarregadas: Assinatura[] = JSON.parse(assinaturasSalvas);
-      setAssinaturas(
-        assinaturasCarregadas.map((item) => ({
-          ...item,
-          pessoa: item.pessoa || "Rennan",
-        })),
-      );
-    }
-
-    const historicoAtualizado = localStorage.getItem("historicoMensal");
-    if (historicoAtualizado || historicoMensalSalvo) {
-      setHistoricoMensal(JSON.parse(historicoAtualizado || historicoMensalSalvo || "[]"));
-    }
+    carregarDadosOnline();
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("compras", JSON.stringify(compras));
-    localStorage.setItem("cartoes", JSON.stringify(cartoes));
-    localStorage.setItem("faturasCartoes", JSON.stringify(faturasCartoes));
-    localStorage.setItem("pessoas", JSON.stringify(pessoas));
-    localStorage.setItem(
-      "pessoasSelecionadasCartoes",
-      JSON.stringify(pessoasSelecionadasCartoes),
-    );
-    localStorage.setItem(
-      "pessoasSelecionadasParcelas",
-      JSON.stringify(pessoasSelecionadasParcelas),
-    );
-    localStorage.setItem("receitasClt", JSON.stringify(receitasClt));
-    localStorage.setItem("receitasMei", JSON.stringify(receitasMei));
-    localStorage.setItem("despesasMensais", JSON.stringify(despesasMensais));
-    localStorage.setItem("assinaturas", JSON.stringify(assinaturas));
-    localStorage.setItem("historicoMensal", JSON.stringify(historicoMensal));
+    if (!dadosCarregados) return;
+
+    const dadosAtualizados: AppData = {
+      compras,
+      cartoes,
+      faturasCartoes,
+      pessoas,
+      pessoasSelecionadasCartoes,
+      pessoasSelecionadasParcelas,
+      receitasClt,
+      receitasMei,
+      despesasMensais,
+      assinaturas,
+      historicoMensal,
+      ultimaAtualizacaoMensal,
+    };
+
+    const timeout = window.setTimeout(async () => {
+      const { error } = await supabase.from("app_data").upsert({
+        id: APP_DATA_ID,
+        data: dadosAtualizados,
+        updated_at: new Date().toISOString(),
+      });
+
+      if (error) {
+        console.error("Erro ao salvar dados no Supabase:", error);
+      }
+    }, 500);
+
+    return () => window.clearTimeout(timeout);
   }, [
+    dadosCarregados,
     compras,
     cartoes,
     faturasCartoes,
@@ -477,6 +681,7 @@ export default function Home() {
     despesasMensais,
     assinaturas,
     historicoMensal,
+    ultimaAtualizacaoMensal,
   ]);
 
   const totalReceitasClt = useMemo(
@@ -1136,7 +1341,7 @@ export default function Home() {
     const backup = {
       versao: 1,
       criadoEm: new Date().toLocaleString("pt-BR"),
-      ultimaAtualizacaoMensal: localStorage.getItem("ultimaAtualizacaoMensal") || chaveMesAtual(),
+      ultimaAtualizacaoMensal,
       dados: {
         compras,
         cartoes,
@@ -1209,30 +1414,7 @@ export default function Home() {
       setAssinaturas(assinaturasRestauradas);
       setHistoricoMensal(dados.historicoMensal || []);
 
-      localStorage.setItem("compras", JSON.stringify(comprasRestauradas));
-      localStorage.setItem("cartoes", JSON.stringify(dados.cartoes || cartoesIniciais));
-      localStorage.setItem("faturasCartoes", JSON.stringify(dados.faturasCartoes || faturasCartoesIniciais));
-      localStorage.setItem("pessoas", JSON.stringify(dados.pessoas || pessoasIniciais));
-      localStorage.setItem(
-        "pessoasSelecionadasCartoes",
-        JSON.stringify(dados.pessoasSelecionadasCartoes || ["Rennan"]),
-      );
-      localStorage.setItem(
-        "pessoasSelecionadasParcelas",
-        JSON.stringify(dados.pessoasSelecionadasParcelas || ["Rennan"]),
-      );
-      localStorage.setItem("receitasClt", JSON.stringify(dados.receitasClt || receitasCltIniciais));
-      localStorage.setItem("receitasMei", JSON.stringify(dados.receitasMei || receitasMeiIniciais));
-      localStorage.setItem(
-        "despesasMensais",
-        JSON.stringify(dados.despesasMensais || despesasMensaisIniciais),
-      );
-      localStorage.setItem("assinaturas", JSON.stringify(assinaturasRestauradas));
-      localStorage.setItem("historicoMensal", JSON.stringify(dados.historicoMensal || []));
-      localStorage.setItem(
-        "ultimaAtualizacaoMensal",
-        backup.ultimaAtualizacaoMensal || chaveMesAtual(),
-      );
+      setUltimaAtualizacaoMensal(backup.ultimaAtualizacaoMensal || chaveMesAtual());
 
       alert("Backup restaurado com sucesso!");
     } catch {
@@ -1516,6 +1698,17 @@ export default function Home() {
     setPessoas(pessoasImportadas);
 
     alert("Planilha importada com sucesso!");
+  }
+
+  if (carregandoDados) {
+    return (
+      <main className="min-h-screen bg-zinc-950 text-white flex items-center justify-center">
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-8 text-center">
+          <p className="text-2xl font-bold">Carregando dados online...</p>
+          <p className="mt-2 text-zinc-400">Conectando ao Supabase</p>
+        </div>
+      </main>
+    );
   }
 
   return (
