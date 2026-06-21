@@ -1702,9 +1702,9 @@ export default function Home() {
 
   if (carregandoDados) {
     return (
-      <main className="min-h-screen bg-zinc-950 text-white flex items-center justify-center">
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-8 text-center">
-          <p className="text-2xl font-bold">Carregando dados online...</p>
+      <main className="min-h-screen bg-zinc-950 text-white flex items-center justify-center px-4">
+        <div className="w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-900 p-6 sm:p-8 text-center">
+          <p className="text-xl sm:text-2xl font-bold">Carregando dados online...</p>
           <p className="mt-2 text-zinc-400">Conectando ao Supabase</p>
         </div>
       </main>
@@ -1712,12 +1712,12 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-white">
-      <aside className="fixed left-0 top-0 h-full w-72 bg-zinc-900 border-r border-zinc-800 p-6">
-        <h1 className="text-2xl font-bold">💰 Controle Financeiro</h1>
-        <p className="text-zinc-500 text-sm mt-1 mb-8">Gestão pessoal</p>
+    <main className="min-h-screen overflow-x-hidden bg-zinc-950 text-white">
+      <aside className="w-full border-b border-zinc-800 bg-zinc-900 p-4 md:fixed md:left-0 md:top-0 md:h-full md:w-72 md:border-b-0 md:border-r md:p-6">
+        <h1 className="text-xl sm:text-2xl font-bold">💰 Controle Financeiro</h1>
+        <p className="mt-1 mb-4 text-sm text-zinc-500 md:mb-8">Gestão pessoal</p>
 
-        <nav className="space-y-3">
+        <nav className="flex gap-2 overflow-x-auto pb-2 md:block md:space-y-3 md:overflow-visible md:pb-0">
           {[
             ["dashboard", "📊 Dashboard"],
             ["mensal", "💰 Mensal"],
@@ -1731,7 +1731,7 @@ export default function Home() {
               key={id}
               type="button"
               onClick={() => setAba(id)}
-              className={`w-full text-left px-4 py-3 rounded-lg transition ${
+              className={`min-w-max rounded-lg px-4 py-3 text-left text-sm transition md:w-full ${
                 aba === id ? "bg-green-600" : "bg-zinc-800 hover:bg-zinc-700"
               }`}
             >
@@ -1741,12 +1741,12 @@ export default function Home() {
         </nav>
       </aside>
 
-      <section className="ml-72 p-8">
+      <section className="p-4 sm:p-6 md:ml-72 md:p-8">
         {aba === "dashboard" && (
           <>
-            <h2 className="text-4xl font-bold mb-8">Dashboard</h2>
+            <h2 className="mb-6 text-3xl font-bold sm:mb-8 sm:text-4xl">Dashboard</h2>
 
-            <div className="grid grid-cols-4 gap-4 mb-8">
+            <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 sm:mb-8">
               <Card
                 titulo="Receitas do mês"
                 valor={formatar(totalReceitas)}
@@ -1769,7 +1769,7 @@ export default function Home() {
               />
             </div>
 
-            <div className="grid grid-cols-4 gap-4 mb-8">
+            <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 sm:mb-8">
               <Card
                 titulo="CLT"
                 valor={formatar(totalReceitasClt)}
@@ -1792,9 +1792,9 @@ export default function Home() {
               />
             </div>
 
-            <div className="flex items-center justify-between mb-4">
+            <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h3 className="text-2xl font-bold">Resumo por cartão</h3>
+                <h3 className="text-xl font-bold sm:text-2xl">Resumo por cartão</h3>
                 <p className="text-zinc-400 text-sm mt-1">
                   Mostrando somente Rennan, com avulsos, assinaturas e todas as parcelas futuras.
                 </p>
@@ -1802,20 +1802,20 @@ export default function Home() {
 
               <div className="text-right">
                 <p className="text-zinc-400 text-sm">Total dos cartões</p>
-                <p className="text-2xl font-bold text-red-500">
+                <p className="text-xl font-bold sm:text-2xl text-red-500">
                   {formatar(totalCartoesFiltrado)}
                 </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {gastosPorCartao.map((cartao) => (
                 <div
                   key={cartao.nome}
-                  className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl"
+                  className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 sm:p-6"
                 >
                   <p className="text-zinc-400">{cartao.nome}</p>
-                  <p className="text-2xl font-bold">{formatar(cartao.gasto)}</p>
+                  <p className="text-xl font-bold sm:text-2xl">{formatar(cartao.gasto)}</p>
                   <p className="text-sm text-zinc-500 mt-2">
                     Limite: {formatar(cartao.limite)}
                   </p>
@@ -1834,7 +1834,7 @@ export default function Home() {
                     Uso: {cartao.uso.toFixed(0)}%
                   </p>
 
-                  <div className="mt-4 flex gap-2">
+                  <div className="mt-4 flex flex-wrap gap-2">
                     <button
                       type="button"
                       onClick={() => setFaturaDetalhesAberta(cartao.nome)}
@@ -1851,9 +1851,9 @@ export default function Home() {
 
         {aba === "mensal" && (
           <>
-            <h2 className="text-4xl font-bold mb-8">Mensal</h2>
+            <h2 className="mb-6 text-3xl font-bold sm:mb-8 sm:text-4xl">Mensal</h2>
 
-            <div className="flex gap-3 mb-6">
+            <div className="mb-6 flex gap-3 overflow-x-auto pb-2">
               <button
                 type="button"
                 onClick={() => setSubAbaMensal("receitas")}
@@ -1877,7 +1877,7 @@ export default function Home() {
 
             {subAbaMensal === "receitas" && (
               <>
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-6">
                   <TabelaLancamentos
                     titulo="CLT"
                     cor="green"
@@ -1913,7 +1913,7 @@ export default function Home() {
                   />
                 </div>
 
-                <div className="grid grid-cols-3 gap-4 mt-8">
+                <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:mt-8">
                   <Card
                     titulo="Total CLT"
                     valor={formatar(totalReceitasClt)}
@@ -1952,7 +1952,7 @@ export default function Home() {
                   }
                 />
 
-                <div className="grid grid-cols-4 gap-4 mt-8">
+                <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 sm:mt-8">
                   <Card
                     titulo="Despesas mensais"
                     valor={formatar(totalDespesasMensais)}
@@ -1981,12 +1981,12 @@ export default function Home() {
 
         {aba === "cartoes" && (
           <>
-            <h2 className="text-4xl font-bold mb-4">Cartões</h2>
+            <h2 className="mb-4 text-3xl font-bold sm:text-4xl">Cartões</h2>
 
             <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl mb-6">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h3 className="text-2xl font-bold">Cartões de Rennan</h3>
+                  <h3 className="text-xl font-bold sm:text-2xl">Cartões de Rennan</h3>
                   <p className="text-zinc-400 text-sm mt-1">
                     Os totais consideram somente Rennan + assinaturas fixas do cartão.
                   </p>
@@ -1994,28 +1994,28 @@ export default function Home() {
 
                 <div className="text-right">
                   <p className="text-zinc-400 text-sm">Total dos cartões</p>
-                  <p className="text-2xl font-bold text-red-500">
+                  <p className="text-xl font-bold sm:text-2xl text-red-500">
                     {formatar(totalCartoesFiltrado)}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               {gastosPorCartao.map((cartao) => (
                 <div
                   key={cartao.nome}
-                  className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl"
+                  className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 sm:p-6"
                 >
-                  <h3 className="text-2xl font-bold mb-4">{cartao.nome}</h3>
+                  <h3 className="text-xl font-bold sm:text-2xl mb-4">{cartao.nome}</h3>
                   <p className="text-zinc-400">Total do cartão</p>
-                  <p className="text-3xl font-bold text-red-500">
+                  <p className="text-xl font-bold break-words sm:text-3xl text-red-500">
                     {formatar(cartao.gasto)}
                   </p>
 
                   <p className="text-zinc-400 mt-4">Limite</p>
                   <input
-                    className="w-full bg-zinc-800 p-3 rounded mt-2 outline-none"
+                    className="mt-2 w-full rounded bg-zinc-800 p-3 text-base outline-none"
                     value={cartao.limite}
                     type="number"
                     onChange={(e) => alterarLimite(cartao.nome, e.target.value)}
@@ -2025,7 +2025,7 @@ export default function Home() {
                     Fecha dia {faturasCartoes.find((item) => item.nome === cartao.nome)?.fechamento || "-"} • Vence dia {faturasCartoes.find((item) => item.nome === cartao.nome)?.vencimento || "-"}
                   </p>
 
-                  <div className="mt-4 flex gap-2">
+                  <div className="mt-4 flex flex-wrap gap-2">
                     <button
                       type="button"
                       onClick={() => setFaturaDetalhesAberta(cartao.nome)}
@@ -2166,7 +2166,7 @@ export default function Home() {
                           Nenhuma assinatura fixa neste cartão.
                         </p>
                       ) : (
-                        <div className="space-y-3">
+                        <div className="flex gap-2 overflow-x-auto pb-2 md:block md:space-y-3 md:overflow-visible md:pb-0">
                           {assinaturas
                             .filter((item) => item.cartao === cartao.nome)
                             .map((item) => (
@@ -2237,7 +2237,7 @@ export default function Home() {
                           Nenhum gasto avulso cadastrado neste cartão.
                         </p>
                       ) : (
-                        <div className="space-y-3">
+                        <div className="flex gap-2 overflow-x-auto pb-2 md:block md:space-y-3 md:overflow-visible md:pb-0">
                           {compras
                             .filter(
                               (item) =>
@@ -2304,14 +2304,14 @@ export default function Home() {
                 <p className="text-zinc-400 text-sm">
                   Total de parcelas filtradas
                 </p>
-                <p className="text-3xl font-bold text-yellow-400">
+                <p className="text-xl font-bold sm:text-2xl sm:text-3xl text-yellow-400">
                   {formatar(totalParcelasSelecionadas)}
                 </p>
               </div>
             </div>
 
             <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl mb-6">
-              <h3 className="text-2xl font-bold mb-4">Filtro por pessoa</h3>
+              <h3 className="text-xl font-bold sm:text-2xl mb-4">Filtro por pessoa</h3>
               <FiltroPessoasCartoes
                 pessoas={pessoas}
                 selecionadas={pessoasSelecionadasParcelas}
@@ -2332,10 +2332,10 @@ export default function Home() {
               {parcelasPorCartao.map((cartao) => (
                 <div
                   key={cartao.nome}
-                  className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden"
+                  className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900"
                 >
                   <div className="flex items-center justify-between bg-zinc-800 p-4">
-                    <h3 className="text-2xl font-bold">💳 {cartao.nome}</h3>
+                    <h3 className="text-xl font-bold sm:text-2xl">💳 {cartao.nome}</h3>
                     <p className="text-yellow-400 font-bold">
                       Total de parcelas: {formatar(cartao.totalParcelas)}
                     </p>
@@ -2385,7 +2385,7 @@ export default function Home() {
                                 {formatar(item.valor * restantes)}
                               </td>
                               <td className="p-4">
-                                <div className="flex gap-3">
+                                <div className="flex flex-col gap-3 sm:flex-row">
                                   <button
                                     type="button"
                                     onClick={() => abrirModalEditarCompra(item)}
@@ -2426,10 +2426,10 @@ export default function Home() {
 
         {aba === "pessoas" && (
           <>
-            <h2 className="text-4xl font-bold mb-8">Pessoas</h2>
+            <h2 className="mb-6 text-3xl font-bold sm:mb-8 sm:text-4xl">Pessoas</h2>
 
             <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl mb-6">
-              <div className="flex gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row">
                 <input
                   className="flex-1 bg-zinc-800 p-3 rounded outline-none"
                   placeholder="Nome da pessoa"
@@ -2447,19 +2447,19 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {pessoas.map((nome) => {
                 const total = totalDaPessoa(nome);
 
                 return (
                   <div
                     key={nome}
-                    className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl"
+                    className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 sm:p-6"
                   >
                     <p className="text-zinc-400">{nome}</p>
-                    <p className="text-2xl font-bold mb-4">{formatar(total)}</p>
+                    <p className="text-xl font-bold sm:text-2xl mb-4">{formatar(total)}</p>
 
-                    <div className="flex gap-3">
+                    <div className="flex flex-col gap-3 sm:flex-row">
                       <button
                         type="button"
                         onClick={() => setPessoaDetalhes(nome)}
@@ -2503,7 +2503,7 @@ export default function Home() {
             </div>
 
             {historicoMensal.length === 0 ? (
-              <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl">
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 sm:p-6">
                 <p className="text-zinc-400">
                   Nenhum mês salvo ainda. Clique em "Salvar mês atual" para criar o primeiro histórico.
                 </p>
@@ -2515,11 +2515,11 @@ export default function Home() {
                   .map((item) => (
                     <div
                       key={item.mes}
-                      className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl"
+                      className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 sm:p-6"
                     >
                       <div className="flex items-center justify-between mb-5">
                         <div>
-                          <h3 className="text-2xl font-bold capitalize">
+                          <h3 className="text-xl font-bold sm:text-2xl capitalize">
                             {nomeMesHistorico(item.mes)}
                           </h3>
                           <p className="text-zinc-500 text-sm">
@@ -2536,7 +2536,7 @@ export default function Home() {
                         </button>
                       </div>
 
-                      <div className="grid grid-cols-4 gap-4">
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                         <Card
                           titulo="Receitas"
                           valor={formatar(item.receitas)}
@@ -2559,7 +2559,7 @@ export default function Home() {
                         />
                       </div>
 
-                      <div className="grid grid-cols-4 gap-4 mt-4">
+                      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                         <Card
                           titulo="Despesas mensais"
                           valor={formatar(item.despesasMensais)}
@@ -2590,10 +2590,10 @@ export default function Home() {
 
         {aba === "config" && (
           <>
-            <h2 className="text-4xl font-bold mb-8">Configurações</h2>
+            <h2 className="mb-6 text-3xl font-bold sm:mb-8 sm:text-4xl">Configurações</h2>
 
             <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl max-w-4xl mb-6">
-              <h3 className="text-2xl font-bold mb-3">Gerenciar cartões</h3>
+              <h3 className="text-xl font-bold sm:text-2xl mb-3">Gerenciar cartões</h3>
               <p className="text-zinc-400 mb-4">
                 Cadastre novos cartões ou exclua cartões que não usa mais.
               </p>
@@ -2622,7 +2622,7 @@ export default function Home() {
                 </button>
               </div>
 
-              <div className="space-y-3">
+              <div className="flex gap-2 overflow-x-auto pb-2 md:block md:space-y-3 md:overflow-visible md:pb-0">
                 {cartoes.map((cartaoItem) => {
                   const temMovimento =
                     compras.some((item) => item.cartao === cartaoItem.nome) ||
@@ -2655,7 +2655,7 @@ export default function Home() {
             </div>
 
             <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl max-w-4xl mb-6">
-              <h3 className="text-2xl font-bold mb-3">Cadastrar gasto avulso</h3>
+              <h3 className="text-xl font-bold sm:text-2xl mb-3">Cadastrar gasto avulso</h3>
               <p className="text-zinc-400 mb-4">
                 Use para compras feitas uma única vez, sem parcelamento.
               </p>
@@ -2706,7 +2706,7 @@ export default function Home() {
             </div>
 
             <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl max-w-4xl mb-6">
-              <h3 className="text-2xl font-bold mb-3">Cadastrar parcela</h3>
+              <h3 className="text-xl font-bold sm:text-2xl mb-3">Cadastrar parcela</h3>
               <p className="text-zinc-400 mb-4">
                 Use para compras parceladas. Depois elas aparecerão na aba Parcelas.
               </p>
@@ -2775,7 +2775,7 @@ export default function Home() {
             </div>
 
             <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl max-w-2xl mb-6">
-              <h3 className="text-2xl font-bold mb-3">Backup dos dados</h3>
+              <h3 className="text-xl font-bold sm:text-2xl mb-3">Backup dos dados</h3>
               <p className="text-zinc-400 mb-4">
                 Baixe um arquivo com todos os dados do sistema para não perder nada caso limpe o navegador ou troque de computador.
               </p>
@@ -2808,7 +2808,7 @@ export default function Home() {
             </div>
 
             <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl max-w-2xl mb-6">
-              <h3 className="text-2xl font-bold mb-3">Aplicativo no celular</h3>
+              <h3 className="text-xl font-bold sm:text-2xl mb-3">Aplicativo no celular</h3>
               <p className="text-zinc-400 mb-4">
                 Com os arquivos de PWA instalados, abra o site no celular e use a opção do navegador para adicionar à tela inicial.
               </p>
@@ -2821,7 +2821,7 @@ export default function Home() {
             </div>
 
             <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl max-w-2xl">
-              <h3 className="text-2xl font-bold mb-3">
+              <h3 className="text-xl font-bold sm:text-2xl mb-3">
                 Importar planilha Excel
               </h3>
               <p className="text-zinc-400 mb-4">
@@ -2850,27 +2850,27 @@ export default function Home() {
       </section>
 
       {modalAberto && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-          <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl w-[420px]">
-            <h2 className="text-2xl font-bold mb-4">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-3 sm:items-center">
+          <div className="max-h-[90vh] w-full max-w-[420px] overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-900 p-5 sm:p-6">
+            <h2 className="text-xl font-bold sm:text-2xl mb-4">
               {compraEditandoId ? "Editar Parcela" : "Nova Parcela"}
             </h2>
 
             <input
-              className="w-full bg-zinc-800 p-3 rounded mb-3 outline-none"
+              className="mb-3 w-full rounded bg-zinc-800 p-3 text-base outline-none"
               placeholder="Descrição"
               value={descricao}
               onChange={(e) => setDescricao(e.target.value)}
             />
             <input
-              className="w-full bg-zinc-800 p-3 rounded mb-3 outline-none"
+              className="mb-3 w-full rounded bg-zinc-800 p-3 text-base outline-none"
               placeholder="Valor"
               value={valor}
               onChange={(e) => setValor(e.target.value)}
             />
 
             <select
-              className="w-full bg-zinc-800 p-3 rounded mb-3 outline-none"
+              className="mb-3 w-full rounded bg-zinc-800 p-3 text-base outline-none"
               value={cartao}
               onChange={(e) => setCartao(e.target.value)}
             >
@@ -2880,7 +2880,7 @@ export default function Home() {
             </select>
 
             <select
-              className="w-full bg-zinc-800 p-3 rounded mb-3 outline-none"
+              className="mb-3 w-full rounded bg-zinc-800 p-3 text-base outline-none"
               value={pessoa}
               onChange={(e) => setPessoa(e.target.value)}
             >
@@ -2889,9 +2889,9 @@ export default function Home() {
               ))}
             </select>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <input
-                className="w-full bg-zinc-800 p-3 rounded mb-5 outline-none"
+                className="mb-5 w-full rounded bg-zinc-800 p-3 text-base outline-none"
                 placeholder="Parcela atual"
                 type="number"
                 min="1"
@@ -2899,7 +2899,7 @@ export default function Home() {
                 onChange={(e) => setParcelaAtual(e.target.value)}
               />
               <input
-                className="w-full bg-zinc-800 p-3 rounded mb-5 outline-none"
+                className="mb-5 w-full rounded bg-zinc-800 p-3 text-base outline-none"
                 placeholder="Total parcelas"
                 type="number"
                 min="1"
@@ -2908,7 +2908,7 @@ export default function Home() {
               />
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row">
               <button
                 type="button"
                 onClick={salvarCompra}
@@ -2933,11 +2933,11 @@ export default function Home() {
       )}
 
       {pessoaDetalhes && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-3 sm:items-center">
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl w-[980px] max-h-[80vh] overflow-hidden">
             <div className="flex items-center justify-between p-6 border-b border-zinc-800">
               <div>
-                <h2 className="text-2xl font-bold">
+                <h2 className="text-xl font-bold sm:text-2xl">
                   Detalhes de {pessoaDetalhes}
                 </h2>
                 <p className="text-zinc-400">
@@ -3012,7 +3012,7 @@ export default function Home() {
                           </td>
                           <td className="p-4">{item.data}</td>
                           <td className="p-4">
-                            <div className="flex gap-3">
+                            <div className="flex flex-col gap-3 sm:flex-row">
                               <button
                                 type="button"
                                 onClick={() => abrirModalEditarCompra(item)}
@@ -3047,7 +3047,7 @@ export default function Home() {
                         </td>
                         <td className="p-4">Todo mês</td>
                         <td className="p-4">
-                          <div className="flex gap-3">
+                          <div className="flex flex-col gap-3 sm:flex-row">
                             <button
                               type="button"
                               onClick={() => {
@@ -3110,11 +3110,11 @@ export default function Home() {
         const uso = cartaoSelecionado?.uso || 0;
 
         return (
-          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-3 sm:items-center">
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl w-[880px] max-h-[85vh] overflow-hidden">
               <div className="flex items-center justify-between p-6 border-b border-zinc-800">
                 <div>
-                  <h2 className="text-2xl font-bold">
+                  <h2 className="text-xl font-bold sm:text-2xl">
                     💳 Fatura {faturaDetalhesAberta}
                   </h2>
                   <p className="text-zinc-400 mt-1">
@@ -3270,9 +3270,9 @@ function Card({
   cor: string;
 }) {
   return (
-    <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl">
+    <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 sm:p-6">
       <p className="text-zinc-400">{titulo}</p>
-      <p className={`text-3xl font-bold ${cor}`}>{valor}</p>
+      <p className={`text-xl font-bold leading-tight break-words sm:text-2xl lg:text-3xl ${cor}`}>{valor}</p>
     </div>
   );
 }
@@ -3303,14 +3303,14 @@ function TabelaLancamentos({
   const total = itens.reduce((soma, item) => soma + item.valor, 0);
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+    <div className="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-900">
       <div
         className={`${cor === "green" ? "bg-green-600" : "bg-red-600"} p-3 font-bold`}
       >
         {titulo}
       </div>
 
-      <div className="grid grid-cols-[1fr_180px_100px] bg-zinc-800 font-bold">
+      <div className="grid min-w-[620px] grid-cols-[1fr_180px_100px] bg-zinc-800 font-bold">
         <div className="p-3">Descrição</div>
         <div className="p-3">Valor</div>
         <div className="p-3">Ação</div>
@@ -3319,7 +3319,7 @@ function TabelaLancamentos({
       {itens.map((item) => (
         <div
           key={item.id}
-          className="grid grid-cols-[1fr_180px_100px] border-t border-zinc-800"
+          className="grid min-w-[620px] grid-cols-[1fr_180px_100px] border-t border-zinc-800"
         >
           <input
             className="p-3 bg-zinc-900 outline-none"
@@ -3344,7 +3344,7 @@ function TabelaLancamentos({
         </div>
       ))}
 
-      <div className="grid grid-cols-[1fr_180px_100px] border-t border-zinc-800">
+      <div className="grid min-w-[620px] grid-cols-[1fr_180px_100px] border-t border-zinc-800">
         <input
           className="p-3 bg-zinc-800 outline-none"
           placeholder="Novo item"
@@ -3368,7 +3368,7 @@ function TabelaLancamentos({
         </button>
       </div>
 
-      <div className="grid grid-cols-2 font-bold">
+      <div className="grid min-w-[620px] grid-cols-2 font-bold">
         <div className="p-3 bg-zinc-800">Total</div>
         <div
           className={`${cor === "green" ? "bg-green-700" : "bg-red-700"} p-3 text-right`}
@@ -3388,8 +3388,9 @@ function Tabela({
   excluirCompra: (id: number) => void;
 }) {
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-      <table className="w-full">
+    <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[760px]">
         <thead className="bg-zinc-800">
           <tr>
             <th className="p-4 text-left">Compra</th>
@@ -3435,7 +3436,8 @@ function Tabela({
             </tr>
           ))}
         </tbody>
-      </table>
+        </table>
+      </div>
     </div>
   );
 }
